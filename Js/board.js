@@ -1,181 +1,121 @@
-class Board{
-  constructor(){
-    this.board = [
-                  [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
-                  [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],
-                  [0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0]];
+class Board {
 
-    this.sections = [[0,0,0], [0,0,0], [0,0,0]];
+  constructor() {
+    this.board = [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    ];
+
+    this.sections = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
     this.player = 1;
     this.xold = -1;
     this.yold = -1;
     this.win = 0;
   }
 
-  print_board(){
+  printBoard() {
     var S = "";
-    for(var i = 0; i < 9; i++){
-      for(var j = 0; j < 9; j++){
-        if(this.board[i][j] != 0){
-          if(this.board[i][j] > 0){
-            S += "X";
-          }else S += "O";
-        }else S += "-";
-        S += "|";
+    for (var i = 0; i < this.board.length; i++) {
+      for (var j = 0; j < this.board.length; j++) {
+        if (this.board[i][j] != 0) {
+          if (this.board[i][j] > 0) S += "X";
+          else S += "O";
+        } else S += "·";
+        
+        if(j == 2 || j == 5) S+= "║";
+        else if(j < this.board.length -1) S += "|";
       }
       S += "\n";
+      if(i == 2 || i == 5) S+= "═════╬═════╬═════\n";
     }
     return S;
   }
 
-  play(player, x, y){
-
+  isValidPlay(x, y){
     if(this.win != 0){
-      return "Ya ha ganado el jugador " + this.player;
+      return false;
     }
-    var flag = false;
-    var xold = this.xold;
-    var yold = this.yold;
+    if(x < this.board.length && x >= 0 && y < this.board.length && y >= 0 && this.board[x][y] == 0) {
+      if(this.xold < 0 && this.yold < 0) {
+        return true;
+      }else{
+        for(var i = 0; i < this.board.length/3; i++){
+          for(var j = 0; j < this.board.length/3; j++){
+            if( this.xold%3 == i && x >= 3*i && x <= 3*i+2 && 
+                this.yold%3 == j && y >= 3*j && y <= 3*j+2 ) 
+                return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
 
-    if (x < 9 && x >= 0 && y < 9 && y >= 0 && this.board[x][y] == 0) {
-                  if (xold < 0 && yold < 0) {
-                        flag = true;
-                    } else if (
-                            ((xold % 3 == 0 && x >= 0 && x <= 2 && yold % 3 == 0 && y >= 0 && y <= 2)) ||
-                                    ((xold % 3 == 1 && x >= 3 && x <= 5 && yold % 3 == 0 && y >= 0 && y <= 2)) ||
-                                    ((xold % 3 == 2 && x >= 6 && x <= 8 && yold % 3 == 0 && y >= 0 && y <= 2)) ||
-                                    ((xold % 3 == 0 && x >= 0 && x <= 2 && yold % 3 == 1 && y >= 3 && y <= 5)) ||
-                                    ((xold % 3 == 1 && x >= 3 && x <= 5 && yold % 3 == 1 && y >= 3 && y <= 5)) ||
-                                    ((xold % 3 == 2 && x >= 6 && x <= 8 && yold % 3 == 1 && y >= 3 && y <= 5)) ||
-                                    ((xold % 3 == 0 && x >= 0 && x <= 2 && yold % 3 == 2 && y >= 6 && y <= 8)) ||
-                                    ((xold % 3 == 1 && x >= 3 && x <= 5 && yold % 3 == 2 && y >= 6 && y <= 8)) ||
-                                    ((xold % 3 == 2 && x >= 6 && x <= 8 && yold % 3 == 2 && y >= 6 && y <= 8))
-                    ) {
-                        flag = true;
-                    }
-                }
+  getSection(x, y){
+    x -= (x % 3);
+    y -= (y % 3);
+    var M = [[],[],[]];
+    for(var i = 0; i < 3; i++){
+      M[i] = this.board.slice(x, ++x)[0].slice(y, y+3);
+    }
+    return M;
+  }
 
-    if(flag){
-
+  play(x, y) {
+    if (this.isValidPlay(x, y)) {
       this.board[x][y] = this.player;
 
-      var a = this.victory(x, y);
+      var winner = this.conquered(this.getSection(x, y));
+      
+      if(winner != 0) this.sections[(x-(x%3))/3][(y-(y%3))/3] = winner;
 
-      if(a[0] != -1){
-              this.xold = -1;
-              this.yold = -1;
-              this.sections[a[0]][a[1]] = player;
-          }else {
-              this.xold = x;
-              this.yold = y;
+      if(this.sections[x%3][y%3] != 0){
+        this.xold = -1;
+        this.yold = -1;
+      }else{
+        this.xold = x;
+        this.yold = y;
       }
 
-      var x = 0;
-      var y = 0;
-      var flag = false;
-          if(this.sections[(x - x%3)][y] != null && this.sections[(x - x%3) + 1][y] != null && this.sections[(x - x%3) +2][y] != null && this.sections[(x - x%3)][y] == this.player && this.sections[(x - x%3)+1][y] == this.player && this.sections[(x - x%3)+2][y] == this.player){
-              flag = true;
-          }
-          if(this.sections[x][(y- y%3)] != null && this.sections[x][(y- y%3) + 1] != null && this.sections[x][(y- y%3) + 2] != null && this.sections[x][(y- y%3)] == this.player && this.sections[x][(y- y%3)+1] == this.player && this.sections[x][(y- y%3)+2] == this.player){
-              flag = true;
-          }
-          if(this.sections[(x - x%3)][(y - y%3)] != null && this.sections[(x - x%3)+1][(y - y%3)+1] != null && this.sections[(x - x%3)+2][(y - y%3)+2] != null && this.sections[(x - x%3)][(y - y%3)] == this.player && this.sections[(x - x%3)+1][(y - y%3)+1] == this.player && this.sections[(x - x%3)+2][(y - y%3)+2] == this.player){
-              flag = true;
-          }
-          if(this.sections[(x - x%3)+2][(y - y%3)] != null && this.sections[(x - x%3)+1][(y - y%3)+1] != null && this.sections[(x - x%3)][(y - y%3)+2] != null && this.sections[(x - x%3)+2][(y - y%3)] == this.player && this.sections[(x - x%3)+1][(y - y%3)+1] == this.player && this.sections[(x - x%3)][(y - y%3)+2] == this.player){
-              flag = true;
-          }
+      winner = this.conquered(this.sections);
 
-          if (flag){
-            this.win = player;
-          }
-
-      if(this.win != 0){
-        return "Ha ganado el jugador " + this.player
+      if (winner != 0) {
+        this.win = winner;
+        return "Ha ganado el jugador " + this.win
       }
 
       this.player *= -1;
 
-
-      var S = "";
-      for(var i = 0; i < 9; i++){
-        for(var j = 0; j < 9; j++){
-          if(this.board[i][j] != 0){
-            if(this.board[i][j] > 0){
-              S += "X";
-            }else S += "O";
-          }else S += "-";
-          S += "|";
-        }
-        S += "\n";
-      }
-      return S;
-
-      //return print_board();
-    }return "Jugada Invalida!"
+      return true;
+    } return false;
   }
 
-  win(){
-    var x = 0;
-    var y = 0;
-    var flag = false;
-        if(this.sections[(x - x%3)][y] != null && this.sections[(x - x%3) + 1][y] != null && this.sections[(x - x%3) +2][y] != null && this.sections[(x - x%3)][y] == this.player && this.sections[(x - x%3)+1][y] == this.player && this.sections[(x - x%3)+2][y] == this.player){
-            flag = true;
-        }
-        if(this.sections[x][(y- y%3)] != null && this.sections[x][(y- y%3) + 1] != null && this.sections[x][(y- y%3) + 2] != null && this.sections[x][(y- y%3)] == this.player && this.sections[x][(y- y%3)+1] == this.player && this.sections[x][(y- y%3)+2] == this.player){
-            flag = true;
-        }
-        if(this.sections[(x - x%3)][(y - y%3)] != null && this.sections[(x - x%3)+1][(y - y%3)+1] != null && this.sections[(x - x%3)+2][(y - y%3)+2] != null && this.sections[(x - x%3)][(y - y%3)] == this.player && this.sections[(x - x%3)+1][(y - y%3)+1] == this.player && this.sections[(x - x%3)+2][(y - y%3)+2] == this.player){
-            flag = true;
-        }
-        if(this.sections[(x - x%3)+2][(y - y%3)] != null && this.sections[(x - x%3)+1][(y - y%3)+1] != null && this.sections[(x - x%3)][(y - y%3)+2] != null && this.sections[(x - x%3)+2][(y - y%3)] == this.player && this.sections[(x - x%3)+1][(y - y%3)+1] == this.player && this.sections[(x - x%3)][(y - y%3)+2] == this.player){
-            flag = true;
-        }
+  conquered(M) { //Matrix must be 3x3
+    for(var i = 0; i < 3; i++){
+      if(M[i][0] != 0 && M[i][0] == M[i][1] && M[i][0] == M[i][2]) return M[i][0];
+      if(M[0][i] != 0 && M[0][i] == M[1][i] && M[0][i] == M[2][i]) return M[0][i];
+    }
+    if(M[0][0] != 0 && M[0][0] == M[1][1] && M[0][0] == M[2][2]) return M[1][1];
+    if(M[2][0] != 0 && M[2][0] == M[1][1] && M[2][0] == M[0][2]) return M[1][1];
 
-        if (flag){
-          this.win = player;
-        }
-  }
-
-
-  victory(x, y){
-    var flag = false;
-        if(this.board[(x - x%3)][y] != null && this.board[(x - x%3) + 1][y] != null && this.board[(x - x%3) +2][y] != null && this.board[(x - x%3)][y] == this.player && this.board[(x - x%3)+1][y] == this.player && this.board[(x - x%3)+2][y] == this.player){
-            flag = true;
-        }
-        if(this.board[x][(y- y%3)] != null && this.board[x][(y- y%3) + 1] != null && this.board[x][(y- y%3) + 2] != null && this.board[x][(y- y%3)] == this.player && this.board[x][(y- y%3)+1] == this.player && this.board[x][(y- y%3)+2] == this.player){
-            flag = true;
-        }
-        if(this.board[(x - x%3)][(y - y%3)] != null && this.board[(x - x%3)+1][(y - y%3)+1] != null && this.board[(x - x%3)+2][(y - y%3)+2] != null && this.board[(x - x%3)][(y - y%3)] == this.player && this.board[(x - x%3)+1][(y - y%3)+1] == this.player && this.board[(x - x%3)+2][(y - y%3)+2] == this.player){
-            flag = true;
-        }
-        if(this.board[(x - x%3)+2][(y - y%3)] != null && this.board[(x - x%3)+1][(y - y%3)+1] != null && this.board[(x - x%3)][(y - y%3)+2] != null && this.board[(x - x%3)+2][(y - y%3)] == this.player && this.board[(x - x%3)+1][(y - y%3)+1] == this.player && this.board[(x - x%3)][(y - y%3)+2] == this.player){
-            flag = true;
-        }
-
-        if(flag){
-            for(var i = (x - x%3); i < (x - x%3) + 3; i++){
-                for(var j = (y - y%3); j < (y - y%3) + 3; j++){
-                    this.board[i][j] = this.player;
-                }
-            }
-            var a = [x/3, y/3];
-            return a;
-        }
-
-        var a = [-1, -1];
-        return a;
+    return 0;
   }
 }
 
-const p1 = 1;
-const p2 = -1;
-const sp1 = "X";
-const sp2 = "O";
-
 var b = new Board();
-console.log(b.play(1,0,0));
-
-console.log(b.play(-1,0,1));
-
-console.log(b.play(1,1,0));
+console.log(b.printBoard());
+console.log(b.play(0, 0));
+console.log(b.printBoard());
+console.log(b.play(0, 1));
+console.log(b.printBoard());
+console.log(b.play(0, 4));
+console.log(b.printBoard());
+console.log(b.play(0, 3));
+console.log(b.printBoard());
+console.log(b.play(1, 0));
+console.log(b.printBoard());
+console.log(b.play(3, 0));
+console.log(b.printBoard());
+console.log(b.play(2, 0));
+console.log(b.printBoard());
