@@ -36,6 +36,9 @@ class Board {
     if(this.win != 0){
       return false;
     }
+    if(this.sections[(x - x%3)/3][(y - y%3)/3] != 0){
+      return false;
+    }
     if(x < this.board.length && x >= 0 && y < this.board.length && y >= 0 && this.board[x][y] == 0) {
       if(this.xold < 0 && this.yold < 0) {
         return true;
@@ -103,22 +106,4 @@ class Board {
   }
 }
 
-module.exports.Board = Board;
-
-/*var b = new Board();
-console.log(b.printBoard());
-console.log(b.play(0, 0));
-console.log(b.printBoard());
-console.log(b.play(0, 1));
-console.log(b.printBoard());
-console.log(b.play(0, 4));
-console.log(b.printBoard());
-console.log(b.play(0, 3));
-console.log(b.printBoard());
-console.log(b.play(1, 0));
-console.log(b.printBoard());
-console.log(b.play(3, 0));
-console.log(b.printBoard());
-console.log(b.play(2, 0));
-console.log(b.printBoard());*/
-
+module.exports = {Board};
