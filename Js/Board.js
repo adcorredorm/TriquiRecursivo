@@ -21,7 +21,7 @@ class Board {
         if (this.board[i][j] != 0) {
           if (this.board[i][j] > 0) S += "X";
           else S += "O";
-        } else S += "·";
+        } else S += "·"; //TODO: poner case al imprimir
         
         if(j == 2 || j == 5) S+= "║";
         else if(j < this.board.length -1) S += "|";
@@ -103,7 +103,9 @@ class Board {
   }
 }
 
-var b = new Board();
+module.exports.Board = Board;
+
+/*var b = new Board();
 console.log(b.printBoard());
 console.log(b.play(0, 0));
 console.log(b.printBoard());
@@ -118,4 +120,5 @@ console.log(b.printBoard());
 console.log(b.play(3, 0));
 console.log(b.printBoard());
 console.log(b.play(2, 0));
-console.log(b.printBoard());
+console.log(b.printBoard());*/
+
